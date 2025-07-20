@@ -17,135 +17,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Keyboard interaction functionality
-    const keyboardFrame = document.getElementById('keyboardFrame');
-    const hiddenContent = document.getElementById('hiddenContent');
-    const keyboardFull = document.querySelector('.keyboard-full');
-    const goBackButton = document.getElementById('goBack');
+    // Mobile menu toggle
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
     
-    if (keyboardFrame && hiddenContent && keyboardFull && goBackButton) {
-        let keyPressTimer;
-        let isKeyPressed = false;
-        let keyPressStartTime = 0;
-        
-        // We need to listen for messages from the iframe
-        window.addEventListener('message', function(event) {
-            // Check if the message is from our Spline iframe
-            if (event.data && event.data.type === 'spline') {
-                // If a key is pressed in the Spline scene
-                if (event.data.action === 'keydown') {
-                    if (!isKeyPressed) {
-                        isKeyPressed = true;
-                        keyPressStartTime = Date.now();
-                        
-                        // Start the timer
-                        keyPressTimer = setInterval(function() {
-                            const elapsedTime = Date.now() - keyPressStartTime;
-                            
-                            // If key has been pressed for 5 seconds
-                            if (elapsedTime >= 5000) {
-                                clearInterval(keyPressTimer);
-                                
-                                // Show hidden content
-                                keyboardFull.style.opacity = '0.2';
-                                keyboardFull.style.transform = 'scale(0.95)';
-                                hiddenContent.classList.add('active');
-                            }
-                        }, 100);
-                    }
-                }
-                
-                // If a key is released in the Spline scene
-                if (event.data.action === 'keyup') {
-                    isKeyPressed = false;
-                    clearInterval(keyPressTimer);
-                }
-            }
-        });
-        
-        // Since we can't directly access iframe events, we'll also add keyboard events to the window
-        // This is a fallback in case the iframe doesn't send messages
-        window.addEventListener('keydown', function(e) {
-            if (!isKeyPressed) {
-                isKeyPressed = true;
-                keyPressStartTime = Date.now();
-                
-                keyPressTimer = setInterval(function() {
-                    const elapsedTime = Date.now() - keyPressStartTime;
-                    
-                    if (elapsedTime >= 5000) {
-                        clearInterval(keyPressTimer);
-                        keyboardFull.style.opacity = '0.2';
-                        keyboardFull.style.transform = 'scale(0.95)';
-                        hiddenContent.classList.add('active');
-                    }
-                }, 100);
-            }
-        });
-        
-        window.addEventListener('keyup', function() {
-            isKeyPressed = false;
-            clearInterval(keyPressTimer);
-        });
-        
-        // Go back button functionality
-        goBackButton.addEventListener('click', function() {
-            hiddenContent.classList.remove('active');
-            keyboardFull.style.opacity = '1';
-            keyboardFull.style.transform = 'scale(1)';
-        });
-        
-        // Also add click/touch events to the keyboard iframe container as another fallback
-        keyboardFull.addEventListener('mousedown', function() {
-            if (!isKeyPressed) {
-                isKeyPressed = true;
-                keyPressStartTime = Date.now();
-                
-                keyPressTimer = setInterval(function() {
-                    const elapsedTime = Date.now() - keyPressStartTime;
-                    
-                    if (elapsedTime >= 5000) {
-                        clearInterval(keyPressTimer);
-                        keyboardFull.style.opacity = '0.2';
-                        keyboardFull.style.transform = 'scale(0.95)';
-                        hiddenContent.classList.add('active');
-                    }
-                }, 100);
-            }
-        });
-        
-        keyboardFull.addEventListener('mouseup', function() {
-            isKeyPressed = false;
-            clearInterval(keyPressTimer);
-        });
-        
-        keyboardFull.addEventListener('mouseleave', function() {
-            isKeyPressed = false;
-            clearInterval(keyPressTimer);
-        });
-        
-        // Touch events for mobile
-        keyboardFull.addEventListener('touchstart', function() {
-            if (!isKeyPressed) {
-                isKeyPressed = true;
-                keyPressStartTime = Date.now();
-                
-                keyPressTimer = setInterval(function() {
-                    const elapsedTime = Date.now() - keyPressStartTime;
-                    
-                    if (elapsedTime >= 5000) {
-                        clearInterval(keyPressTimer);
-                        keyboardFull.style.opacity = '0.2';
-                        keyboardFull.style.transform = 'scale(0.95)';
-                        hiddenContent.classList.add('active');
-                    }
-                }, 100);
-            }
-        });
-        
-        keyboardFull.addEventListener('touchend', function() {
-            isKeyPressed = false;
-            clearInterval(keyPressTimer);
+    if (menuToggle && navLinks) {
+        menuToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+            menuToggle.classList.toggle('active');
         });
     }
+    
+    // Initialize scroll animations
+    initScrollAnimations();
 });
+
+// Intersection Observer for scroll animations
+function initScrollAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('in-view');
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+    
+    // Observe timeline elements
+    document.querySelectorAll('.timeline-content').forEach(el => {
+        observer.observe(el);
+    });
+    
+    // Observe other elements that need animations
+    document.querySelectorAll('section h2, .project-card, .skill-box, .achievement-item, .activity-card, .scroll-fade, .scroll-slide-right, .scroll-slide-up, .scroll-stagger').forEach(el => {
+        observer.observe(el);
+    });
+}
